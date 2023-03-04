@@ -4,6 +4,8 @@ import java.time.LocalDate;
 
 import org.springframework.beans.factory.annotation.Value;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -24,6 +26,7 @@ import mar.cod.flightback.utils.Roles;
 
 @Entity
 public class User {
+    @JsonIgnore
     @Transient
     @Value("${default.initial.flights}")
     private Integer initialFlights;
@@ -198,9 +201,9 @@ public class User {
         return role;
     }
 
-    public void setRole(Roles role) {
-        this.role = role;
-    }
+    // public void setRole(Roles role) {
+    // this.role = role;
+    // }
 
     public String getAlert() {
         return alert;

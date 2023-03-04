@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import jakarta.transaction.Transactional;
 import mar.cod.flightback.api.pojo.LogInPojo;
 import mar.cod.flightback.api.pojo.MainUserPojo;
 import mar.cod.flightback.entities.Flight;
@@ -23,6 +24,7 @@ import mar.cod.flightback.entities.repo.UserRepo;
 import mar.cod.flightback.utils.ApplicationStatus;
 import mar.cod.flightback.utils.FlightClass;
 import mar.cod.flightback.utils.Roles;
+import mar.cod.flightback.utils.exception.InsertionException;
 import mar.cod.flightback.utils.exception.NoResultsAvalilable;
 import mar.cod.flightback.utils.exception.NotFoundEntityException;
 import mar.cod.flightback.utils.exception.OperationNotPosible;
@@ -50,7 +52,7 @@ public class UserService {
         this.fucService = fucService;
     }
 
-    public User createUser(MainUserPojo pojo) throws UnmetConditionsException {
+    public User createUser(MainUserPojo pojo) throws Exception {
         // Confirm creation comes from admin
         Optional<User> admin = userRepo.findById(pojo.getCreatorId());
         if (admin.isPresent()) {
@@ -58,8 +60,16 @@ public class UserService {
             if (admin.get().getRole() == Roles.ADMIN) {
                 pojo.getUser().setRemainingFlights(initialFlights);
 
-                User u = userRepo.save(pojo.getUser());
-                return u;
+                try {
+                    Optional<User> foundUser = userRepo.findByUniqueFields(pojo.getUser().getUsr(),
+                            pojo.getUser().getPsw(), pojo.getUser().getEmail());
+                    if (foundUser.isPresent())
+                        throw new OperationNotPosible("Possible duplicate credentials or email");
+                    else
+                        return userRepo.save(pojo.getUser());
+                } catch (Exception e) {
+                    throw new InsertionException(e.getMessage());
+                }
             }
         }
 
@@ -90,25 +100,77 @@ public class UserService {
         return usrs;
     }
 
-    public User updateUser(User u) {
-        User uu = userRepo.save(u);
-        return uu;
+    public User updateUser(User u) throws InsertionException, OperationNotPosible {
+
+        Optional<User> foundUser = userRepo.findById(u.getId());
+        if (foundUser.isEmpty())
+            throw new OperationNotPosible("User with id " + u.getId() + " not registered");
+        else {
+            try {
+                return userRepo.save(u);
+            } catch (Exception e) {
+                throw new InsertionException(e.getMessage());
+            }
+        }
+
     }
 
-    public void deleteUser(User u) {
-        userRepo.delete(u);
+    /*
+     * public void deleteUser(User u) throws OperationNotPosible, InsertionException
+     * {
+     * 
+     * Optional<User> foundUser = userRepo.findById(u.getId());
+     * if (foundUser.isEmpty())
+     * throw new OperationNotPosible("User with id " + u.getId() +
+     * " not registered");
+     * else {
+     * try {
+     * fucRepo.deleteUserFK(u.getId());
+     * userRepo.delete(u);
+     * } catch (Exception e) {
+     * throw new InsertionException(e.getMessage());
+     * }
+     * }
+     * }
+     */
+
+     @Transactional
+    public void deleteUserById(long userId, Long adminId) throws OperationNotPosible, InsertionException, UnmetConditionsException {
+
+        Optional<User> admin = userRepo.findById(adminId);
+        if (admin.isPresent()) {
+            if (admin.get().getRole() == Roles.ADMIN) {
+                try {
+                    Optional<User> foundUser = userRepo.findById(userId);
+                    if (foundUser.isPresent())
+                        throw new OperationNotPosible("Possible duplicate credentials or email");
+                    else {
+                        fucRepo.deleteUserFK(userId);
+                        userRepo.deleteById(userId);
+                    }
+                } catch (Exception e) {
+                    throw new InsertionException(e.getMessage());
+                }
+            }
+        }
+        throw new UnmetConditionsException("User deletion is not made by an Admin");
     }
 
-    public void deleteUserById(long userId) {
-        // delete all flightConnections for this user first
-        fucRepo.deleteUserFK(userId);
-        userRepo.deleteById(userId);
+    public void modifyPsw(long userId, String newPsw) throws OperationNotPosible, InsertionException {
+        Optional<User> foundUser = userRepo.findById(userId);
+        if (foundUser.isEmpty())
+            throw new OperationNotPosible("User with id " + userId + " not registered");
+        else {
+            try {
+                userRepo.setUserPswById(newPsw, userId);
+            } catch (Exception e) {
+                throw new InsertionException(e.getMessage());
+            }
+        }
+
     }
 
-    public void modifyPsw(long userId, String newPsw) {
-        userRepo.setUserPswById(newPsw, userId);
-    }
-
+    @Transactional
     public void requestFlight(long userId, Long flightId, FlightClass flightClass, float price)
             throws OperationNotPosible {
 
@@ -117,14 +179,18 @@ public class UserService {
         if (remainingFlights > 0) {
             user.setRemainingFlights(user.getRemainingFlights() - 1);
             userRepo.save(user);
+
+            UserFlightId ufId = new UserFlightId(flightId, userId);
+            FlightUserConnect flightUserConnect = new FlightUserConnect(ufId, flightClass, price);
+            fucRepo.save(flightUserConnect);
+            
         } else
             throw new OperationNotPosible("User has remaining flights " + remainingFlights);
 
-        UserFlightId ufId = new UserFlightId(flightId, userId);
-        FlightUserConnect flightUserConnect = new FlightUserConnect(ufId, flightClass, price);
-        fucRepo.save(flightUserConnect);
+       
     }
-
+    
+    @Transactional
     public void cancelFlight(long userId, Long flightId)
             throws OperationNotPosible, NotFoundEntityException, NoResultsAvalilable {
 
@@ -137,11 +203,14 @@ public class UserService {
         userRepo.save(user);
     }
 
-    public void denieFlightRequest(long userId, Long flightId, String reason)
+    @Transactional
+    public void denyFlightRequest(long userId, Long flightId, String reason)
             throws NotFoundEntityException, OperationNotPosible, NoResultsAvalilable {
 
         Optional<FlightUserConnect> usrFlightConn = preRequestActionCheck(userId, flightId);
         if (usrFlightConn.isPresent()) {
+            if(reason==null || reason.length()==0)
+                throw new OperationNotPosible("Reasoning required to deny");
             FlightUserConnect fuc = usrFlightConn.get();
             fuc.setStatus(ApplicationStatus.DENIED);
             fuc.setNotes(reason);
@@ -153,6 +222,7 @@ public class UserService {
         }
     }
 
+    @Transactional
     public void approveFlightRequest(long userId, Long flightId, String reason)
             throws NotFoundEntityException, OperationNotPosible, NoResultsAvalilable {
 
@@ -183,13 +253,13 @@ public class UserService {
             throw new NotFoundEntityException("Flight not present: " + flightId);
         } else {
             if (flight.get().getDeparturDate().isBefore(LocalDate.now()))
-                throw new OperationNotPosible("Conditions don't allow this action");
+                throw new OperationNotPosible(" The flight has already departed ");
         }
 
         FlightRequestDto2 dto = fucService.getSpecificDto(userId, flightId);
         if (dto.getFuc().getStatus() == ApplicationStatus.DENIED
                 || dto.getFuc().getStatus() == ApplicationStatus.CANCELED)
-            throw new OperationNotPosible("Flight request status: " + dto.getFuc().getStatus().name());
+            throw new OperationNotPosible("Flight request status is set : " + dto.getFuc().getStatus().name());
     }
 
 }

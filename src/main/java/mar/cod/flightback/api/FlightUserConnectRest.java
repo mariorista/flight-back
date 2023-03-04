@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -29,13 +30,13 @@ public class FlightUserConnectRest {
     }
 
     @GetMapping("user/{userId}")
-    public List<FlightRequestDto2> getUserFlightRequests(long userId) throws NoResultsAvalilable {
+    public List<FlightRequestDto2> getUserFlightRequests(@PathVariable long userId) throws NoResultsAvalilable {
         List<FlightRequestDto2> list = flightUserConnectService.getUserFlightRequests(userId);
         return list;
     }
 
     @GetMapping("specific/{userId}/{flightId}")
-    public FlightRequestDto2 getSpecificDto(long userId, long flightId) throws NoResultsAvalilable {
+    public FlightRequestDto2 getSpecificDto(@PathVariable long userId, @PathVariable long flightId) throws NoResultsAvalilable {
         FlightRequestDto2 dto = flightUserConnectService.getSpecificDto(userId, flightId);
         return dto;
     }

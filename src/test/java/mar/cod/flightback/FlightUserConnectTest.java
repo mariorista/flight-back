@@ -23,7 +23,7 @@ public class FlightUserConnectTest {
             FlightRequestDto2 ret = service.getSpecificDto(0, 0);
             assertNull(ret);
         } catch (NoResultsAvalilable e) {
-            assertEquals(e.getMessage(), "No resuls were found");
+            assertEquals(e.getMessage(), "No resuls of flightRequestwere found");
         }
     }
 }

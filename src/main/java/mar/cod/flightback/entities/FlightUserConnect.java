@@ -19,6 +19,7 @@ public class FlightUserConnect {
     @Enumerated(EnumType.STRING)
     @Column(name = "flight_class", length = 10)
     @NotNull
+    // @NotBlank
     private FlightClass flightClass;
 
     @Column(name = "status", length = 10)

@@ -22,7 +22,7 @@ public class FlightUserConnectService {
     public List<FlightRequestDto2> getAllFlightRequests() throws NoResultsAvalilable {
         List<FlightRequestDto2> list = repo.getAllDto();
         if (list == null)
-            throw new NoResultsAvalilable("No resuls were found");
+            throw new NoResultsAvalilable("No resuls of flightRequestwere found");
         else
             return list;
     }
@@ -30,7 +30,7 @@ public class FlightUserConnectService {
     public List<FlightRequestDto2> getUserFlightRequests(long userId) throws NoResultsAvalilable {
         List<FlightRequestDto2> list = repo.getUserDtoList(userId);
         if (list == null)
-            throw new NoResultsAvalilable("No resuls were found");
+            throw new NoResultsAvalilable("No resuls of flightRequestwere found");
         else
             return list;
     }
@@ -38,7 +38,7 @@ public class FlightUserConnectService {
     public FlightRequestDto2 getSpecificDto(long userId, long flightId) throws NoResultsAvalilable {
         FlightRequestDto2 dto = repo.getSpecificDto(userId, flightId);
         if (dto == null)
-            throw new NoResultsAvalilable("No resuls were found");
+            throw new NoResultsAvalilable("No resuls of flightRequestwere found");
         else
             return dto;
     }

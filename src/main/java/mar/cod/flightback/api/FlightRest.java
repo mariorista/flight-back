@@ -20,6 +20,16 @@ public class FlightRest {
     @Autowired
     private FlightService flightService;
 
+    @GetMapping("/v")
+    public String version() {
+        return "ALL: 1.1.1";
+    }
+
+    @GetMapping("/admin/v")
+    public String version2() {
+        return "ADMIN: 1.1.1";
+    }
+
     @GetMapping("id/{id}")
     public ResponseEntity<Flight> getFlight(@PathVariable long id) throws NotFoundEntityException {
         return ResponseEntity.ok(flightService.getFlight(id));
@@ -31,12 +41,18 @@ public class FlightRest {
     }
 
     @GetMapping("fromto/{from}/{to}")
-    public ResponseEntity<List<Flight>> getAllFlights(String from, String to) {
+    public ResponseEntity<List<Flight>> getAllFlights(@PathVariable String from, @PathVariable String to) {
         return ResponseEntity.ok(flightService.getAllFlights(from, to));
     }
 
+    @GetMapping("from/{from}")
+    public ResponseEntity<List<Flight>> getAllFlightsFrom(@PathVariable String from) {
+        return ResponseEntity.ok(flightService.getAllFlights(from, null));
+    }
+
+
     @GetMapping("transit/{from}/{to}")
-    public ResponseEntity<List<List<Flight>>> findTransitFlights(String from, String to) {
+    public ResponseEntity<List<List<Flight>>> findTransitFlights(@PathVariable String from, @PathVariable String to) {
         return ResponseEntity.ok(flightService.findTransitFlights(from, to));
     }
 

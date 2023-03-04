@@ -21,6 +21,11 @@ public class ValidExceptionHandler {
         return ResponseEntity.badRequest().body(map);
     }
 
+    @ExceptionHandler(InsertionException.class)
+    public ResponseEntity<String> exceptionInsertion(Exception e) {
+        return ResponseEntity.status(505).body(e.getMessage());
+    }
+
     @ExceptionHandler(NotFoundEntityException.class)
     public ResponseEntity<String> exceptionNotFoundEntity(Exception e) {
         return ResponseEntity.status(444).body(e.getMessage());

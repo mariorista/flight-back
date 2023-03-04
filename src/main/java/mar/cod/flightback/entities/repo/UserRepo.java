@@ -26,4 +26,9 @@ public interface UserRepo extends JpaRepository<User, Long> {
     @Transactional
     @Query("UPDATE User u SET u.psw = ?1 WHERE u.id = ?2")
     void setUserPswById(String psw, long userId);
+
+    public Optional<User> findByUsr(String username);
+
+    @Query(" SELECT u FROM User u WHERE (u.usr =?1 AND u.psw =?2) OR u.email = ?3")
+    public  Optional<User> findByUniqueFields(String usr, String psw, String email);
 }

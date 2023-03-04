@@ -33,6 +33,7 @@ import mar.cod.flightback.services.UserService;
 import mar.cod.flightback.utils.ApplicationStatus;
 import mar.cod.flightback.utils.FlightClass;
 import mar.cod.flightback.utils.Roles;
+import mar.cod.flightback.utils.exception.InsertionException;
 import mar.cod.flightback.utils.exception.NoResultsAvalilable;
 import mar.cod.flightback.utils.exception.NotFoundEntityException;
 import mar.cod.flightback.utils.exception.OperationNotPosible;
@@ -66,6 +67,7 @@ public class UserActivitiesTest {
     FlightUserConnectService flightUserConnectService;
 
     private long defaultUserId = -1;
+    private long adminId = 1;
     private String fnam2 = "mario2";
     private String lnam2 = "rista2";
     private User defUser = null;
@@ -81,8 +83,8 @@ public class UserActivitiesTest {
     }
 
     @AfterAll
-    public void setup2() {
-        userService.deleteUserById(defaultUserId);
+    public void setup2() throws OperationNotPosible, InsertionException, UnmetConditionsException {
+        userService.deleteUserById(defaultUserId, adminId);
     }
 
     @Order(1)
@@ -108,7 +110,7 @@ public class UserActivitiesTest {
 
     @Order(4)
     @Test
-    public void modUser() {
+    public void modUser() throws InsertionException, OperationNotPosible {
         try {
             User res = userService.getUserById(defaultUserId);
             assertNotNull(res);
@@ -127,11 +129,11 @@ public class UserActivitiesTest {
 
     @Order(5)
     @Test
-    public void delUser() {
+    public void delUser() throws OperationNotPosible, InsertionException, UnmetConditionsException {
         try {
             User res = userService.getUserById(defaultUserId);
             assertNotNull(res);
-            userService.deleteUser(res);
+            userService.deleteUserById(res.getId(), adminId);
         } catch (NotFoundEntityException e) {
             // user must be present
             fail();
@@ -150,7 +152,7 @@ public class UserActivitiesTest {
             List<FlightRequestDto2> dtoList = flightUserConnectService.getUserFlightRequests(defaultUserId);
             assertTrue(dtoList.isEmpty());
         } catch (NoResultsAvalilable e) {
-            assertEquals(e.getMessage(), "No resuls were found");
+            assertEquals(e.getMessage(), "No resuls of flightRequestwere found");
         }
     }
 
@@ -162,7 +164,7 @@ public class UserActivitiesTest {
 
     @Order(7)
     @Test
-    public void modifyPsw() {
+    public void modifyPsw() throws OperationNotPosible, InsertionException {
         String newPsw = "newPsw";
         userService.modifyPsw(defaultUserId, newPsw);
 
@@ -218,7 +220,7 @@ public class UserActivitiesTest {
             // retUsr = userService.getUserById(defaultUserId);
             // assertEquals(retUsr.getRemainingFlights(), localRemainingFlights);
         } catch (NoResultsAvalilable e) {
-            // assertEquals(e.getMessage(), "No resuls were found");
+            // assertEquals(e.getMessage(), "No resuls of flightRequestwere found");
             fail();
         }
     }
@@ -246,7 +248,7 @@ public class UserActivitiesTest {
             assertFalse(dtoList.isEmpty());
             assertTrue(dtoList.size() >= count);
         } catch (NoResultsAvalilable e) {
-            // assertEquals(e.getMessage(), "No resuls were found");
+            // assertEquals(e.getMessage(), "No resuls of flightRequestwere found");
             fail();
         }
 
@@ -271,19 +273,19 @@ public class UserActivitiesTest {
             assertEquals(flightRequest.getFuc().getStatus(), ApplicationStatus.CANCELED);
 
         } catch (NoResultsAvalilable e) {
-            // assertEquals(e.getMessage(), "No resuls were found");
+            // assertEquals(e.getMessage(), "No resuls of flightRequestwere found");
             fail();
         }
     }
 
     @Test
     @Order(13)
-    public void denieFlight() {
+    public void denyFlight() {
         // TODO alert user for this action
 
         String reason = "too expensive";
         try {
-            userService.denieFlightRequest(defaultUserId, flight1.getFlightId(), reason);
+            userService.denyFlightRequest(defaultUserId, flight1.getFlightId(), reason);
         } catch (NotFoundEntityException | OperationNotPosible | NoResultsAvalilable e) {
             log.error(e.getMessage());
             // e.printStackTrace();
@@ -296,17 +298,17 @@ public class UserActivitiesTest {
             assertEquals(flightRequest.getFuc().getId().getUserId(), defaultUserId);
             assertEquals(flightRequest.getFuc().getId().getFlightId(), flight1.getFlightId());
 
-            //from the operation above
+            // from the operation above
             assertEquals(ApplicationStatus.CANCELED, flightRequest.getFuc().getStatus());
         } catch (NoResultsAvalilable e) {
-            // assertEquals(e.getMessage(), "No resuls were found");
+            // assertEquals(e.getMessage(), "No resuls of flightRequestwere found");
             fail();
         }
     }
 
     @Order(8)
     @Test
-    public void CRUDUserTest() {
+    public void CRUDUserTest() throws OperationNotPosible, InsertionException, UnmetConditionsException {
         // simple Users are created by admin
         String fname = "mario";
         String lname = "rista";
@@ -320,7 +322,12 @@ public class UserActivitiesTest {
         MainUserPojo pojo = new MainUserPojo(creatorsId, u1);
         User ret = null;
         try {
-            ret = userService.createUser(pojo);
+            try {
+                ret = userService.createUser(pojo);
+            } catch (Exception e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
             userId = ret.getId();
             log.info("{}", ret.toString());
             assertNotNull(ret);
@@ -330,7 +337,7 @@ public class UserActivitiesTest {
             assertEquals(ret.getPsw(), psw);
             assertEquals(ret.getEmail(), email);
 
-        } catch (UnmetConditionsException e) {
+        } catch (Exception e) {
 
             e.printStackTrace();
             log.error(e.getMessage());
@@ -376,7 +383,7 @@ public class UserActivitiesTest {
 
         // ----------
 
-        userService.deleteUser(u3);
+        userService.deleteUserById(u3.getId(), adminId);
         User u4 = null;
         try {
             u4 = userService.getUserById(userId);
@@ -409,7 +416,7 @@ public class UserActivitiesTest {
             assertEquals(ret.getUsr(), usr);
             assertEquals(ret.getEmail(), email);
             assertEquals(ret.getFname(), fname);
-        } catch (UnmetConditionsException e) {
+        } catch (Exception e) {
             assertEquals(e.getMessage(), "User creation is not made by an Admin");
         }
     }

@@ -1,8 +1,10 @@
--- insert into flights.user 
--- --(bdate, email, fname, lname, psw, usr, role, remaining_flights)
--- VALUES (1,"2001-01-01", "mr1@mr.com", "mar", "rist", "123asd",2, "Admin", "mr_mr"),
--- (2,"2002-01-01", "mr2@mr.com", "mar", "rist", "123asd",2, "Admin", "mr_mr"),
--- (3,"2003-01-01", "mr3@mr.com", "mar", "rist", "123asd",2, "Admin", "mr_mr");
+-- 
+-- insert into tets_test.user 
+-- (user_id, bdate, email, fname, lname, psw, remaining_flights,  role, usr)
+-- VALUES 
+-- (1,"2001-01-01", "mr1@mr.com", "mar", "rist", "123asd",2, "ADMIN", "mr_mr1"),
+-- (2,"2002-01-01", "mr2@mr.com", "mar", "rist", "123asd",2, "SIMPLE", "mr_mr2"),
+-- (3,"2003-01-01", "mr3@mr.com", "mar", "rist", "123asd",2, "SIMPLE", "mr_mr3");
 
 
 

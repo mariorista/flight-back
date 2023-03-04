@@ -82,11 +82,11 @@ public class FlightService {
         // Map<String, Flight> destKeyMap = new HashMap<>();
         // Map<String, Flight> depKeyMap = new HashMap<>();
         for (Flight flight : flights) {
-            if (flight.getDeparture().equals(dep)) {
+            if (flight.getDeparture().equalsIgnoreCase(dep)) {
                 destKeyMap.put(flight.getDestination(), flight);
             }
 
-            if (flight.getDestination().equals(dest)) {
+            if (flight.getDestination().equalsIgnoreCase(dest)) {
                 depKeyMap.put(flight.getDeparture(), flight);
             }
         }
