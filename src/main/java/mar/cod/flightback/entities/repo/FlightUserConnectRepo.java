@@ -2,6 +2,9 @@ package mar.cod.flightback.entities.repo;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -17,10 +20,16 @@ import mar.cod.flightback.utils.ApplicationStatus;
 public interface FlightUserConnectRepo extends JpaRepository<FlightUserConnect, UserFlightId> {
 
     @Query("SELECT new mar.cod.flightback.entities.dto.FlightRequestDto2(f,fuc) FROM Flight f JOIN FlightUserConnect fuc ON (f.flightId = fuc.id.flightId)")
+    public Page<FlightRequestDto2> getAllDtoPage(Pageable page);
+
+    @Query("SELECT new mar.cod.flightback.entities.dto.FlightRequestDto2(f,fuc) FROM Flight f JOIN FlightUserConnect fuc ON (f.flightId = fuc.id.flightId)")
     public List<FlightRequestDto2> getAllDto();
 
     @Query("SELECT new mar.cod.flightback.entities.dto.FlightRequestDto2(f,fuc) FROM Flight f JOIN FlightUserConnect fuc ON (f.flightId = fuc.id.flightId) WHERE fuc.id.userId=?1")
     public List<FlightRequestDto2> getUserDtoList(long userId);
+
+    @Query("SELECT new mar.cod.flightback.entities.dto.FlightRequestDto2(f,fuc) FROM Flight f JOIN FlightUserConnect fuc ON (f.flightId = fuc.id.flightId) WHERE fuc.id.userId=?1")
+    public  Page<FlightRequestDto2> getUserDtoListPage(long userId, PageRequest pg);
 
     @Query("SELECT new mar.cod.flightback.entities.dto.FlightRequestDto2(f,fuc) FROM Flight f JOIN FlightUserConnect fuc ON (f.flightId = fuc.id.flightId) WHERE fuc.id.userId=?1 AND fuc.id.flightId=?2")
     public FlightRequestDto2 getSpecificDto(long userId, long flightId);
@@ -35,5 +44,7 @@ public interface FlightUserConnectRepo extends JpaRepository<FlightUserConnect, 
     @Transactional
     @Query("Delete FlightUserConnect fuc WHERE  fuc.id.userId=?1 ")
     public void deleteUserFK( long userId);
+
+    
 
 }

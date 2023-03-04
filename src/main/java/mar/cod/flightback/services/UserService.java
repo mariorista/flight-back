@@ -115,27 +115,9 @@ public class UserService {
 
     }
 
-    /*
-     * public void deleteUser(User u) throws OperationNotPosible, InsertionException
-     * {
-     * 
-     * Optional<User> foundUser = userRepo.findById(u.getId());
-     * if (foundUser.isEmpty())
-     * throw new OperationNotPosible("User with id " + u.getId() +
-     * " not registered");
-     * else {
-     * try {
-     * fucRepo.deleteUserFK(u.getId());
-     * userRepo.delete(u);
-     * } catch (Exception e) {
-     * throw new InsertionException(e.getMessage());
-     * }
-     * }
-     * }
-     */
-
-     @Transactional
-    public void deleteUserById(long userId, Long adminId) throws OperationNotPosible, InsertionException, UnmetConditionsException {
+    @Transactional
+    public void deleteUserById(long userId, Long adminId)
+            throws OperationNotPosible, InsertionException, UnmetConditionsException {
 
         Optional<User> admin = userRepo.findById(adminId);
         if (admin.isPresent()) {
@@ -183,13 +165,12 @@ public class UserService {
             UserFlightId ufId = new UserFlightId(flightId, userId);
             FlightUserConnect flightUserConnect = new FlightUserConnect(ufId, flightClass, price);
             fucRepo.save(flightUserConnect);
-            
+
         } else
             throw new OperationNotPosible("User has remaining flights " + remainingFlights);
 
-       
     }
-    
+
     @Transactional
     public void cancelFlight(long userId, Long flightId)
             throws OperationNotPosible, NotFoundEntityException, NoResultsAvalilable {
@@ -209,7 +190,7 @@ public class UserService {
 
         Optional<FlightUserConnect> usrFlightConn = preRequestActionCheck(userId, flightId);
         if (usrFlightConn.isPresent()) {
-            if(reason==null || reason.length()==0)
+            if (reason == null || reason.length() == 0)
                 throw new OperationNotPosible("Reasoning required to deny");
             FlightUserConnect fuc = usrFlightConn.get();
             fuc.setStatus(ApplicationStatus.DENIED);
@@ -218,6 +199,7 @@ public class UserService {
 
             User user = userRepo.findById(userId).get();
             user.setRemainingFlights(user.getRemainingFlights() + 1);
+            user.setAlert(ApplicationStatus.DENIED + " request for flight " + flightId);
             userRepo.save(user);
         }
     }
@@ -230,8 +212,11 @@ public class UserService {
         if (usrFlightConn.isPresent()) {
             FlightUserConnect fuc = usrFlightConn.get();
             fuc.setStatus(ApplicationStatus.APPROVED);
-            fuc.setNotes(reason);
             fucRepo.save(fuc);
+
+            User user = userRepo.findById(userId).get();
+            user.setAlert(ApplicationStatus.APPROVED + " request for flight " + flightId);
+            userRepo.save(user);
         }
     }
 

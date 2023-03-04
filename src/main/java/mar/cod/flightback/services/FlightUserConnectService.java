@@ -3,6 +3,8 @@ package mar.cod.flightback.services;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import mar.cod.flightback.entities.dto.FlightRequestDto2;
@@ -27,6 +29,10 @@ public class FlightUserConnectService {
             return list;
     }
 
+    public Page<FlightRequestDto2> getAllFlightRequestsPage(PageRequest pg) {
+        return (Page<FlightRequestDto2>) repo.getAllDtoPage(pg);
+    }
+
     public List<FlightRequestDto2> getUserFlightRequests(long userId) throws NoResultsAvalilable {
         List<FlightRequestDto2> list = repo.getUserDtoList(userId);
         if (list == null)
@@ -43,5 +49,8 @@ public class FlightUserConnectService {
             return dto;
     }
 
-   
+    public Page<FlightRequestDto2> getUserFlightRequestsPage(long userId, PageRequest pg) {
+        return repo.getUserDtoListPage(userId, pg);
+    }
+
 }
