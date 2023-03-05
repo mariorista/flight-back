@@ -13,7 +13,7 @@ import mar.cod.flightback.entities.User;
 @Repository
 public interface UserRepo extends JpaRepository<User, Long> {
 
-    public Optional<User> findUserByPswAndUsr(String usr, String psw);
+    public Optional<User> findUserByPswAndUsr(String psw,String usr) ;
 
     // @Query("SELECT u.role FROM User u WHERE u.id=:id")
     @Query("SELECT u FROM User u WHERE u.id=?1")

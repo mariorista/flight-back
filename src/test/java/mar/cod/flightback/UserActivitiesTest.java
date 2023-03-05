@@ -400,11 +400,11 @@ public class UserActivitiesTest {
         // There must be 1 admin in the table
         long creatorsId = 1l;
 
-        String fname = "mario";
-        String lname = "rista";
-        String usr = "mar_mar0";
-        String psw = "root";
-        String email = "mar1@mr.com";
+        String fname = "1mario ";
+        String lname = "1rista";
+        String usr = "1mar_mar0";
+        String psw = "1root";
+        String email = "1mar1@mr.com";
         User u1 = new User(fname, lname, usr, psw, email, LocalDate.now().minusYears(3), Roles.SIMPLE);
         MainUserPojo pojo = new MainUserPojo(creatorsId, u1);
         try {

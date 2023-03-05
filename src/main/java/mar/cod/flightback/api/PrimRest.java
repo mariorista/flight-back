@@ -18,7 +18,7 @@ import mar.cod.flightback.utils.exception.NotFoundEntityException;
 
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
-@RequestMapping("r1")
+@RequestMapping("loglog")
 public class PrimRest {
 
     private static final Logger log = LoggerFactory.getLogger(PrimRest.class);

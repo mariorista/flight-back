@@ -87,7 +87,7 @@ public class UserService {
     }
 
     public User getUserByLogin(LogInPojo pojo) throws NotFoundEntityException {
-        Optional<User> user = userRepo.findUserByPswAndUsr(pojo.getUsername(), pojo.getPassword());
+        Optional<User> user = userRepo.findUserByPswAndUsr( pojo.getPassword(),pojo.getUsername());
         if (user.isPresent())
             return user.get();
         else {
@@ -124,8 +124,8 @@ public class UserService {
             if (admin.get().getRole() == Roles.ADMIN) {
                 try {
                     Optional<User> foundUser = userRepo.findById(userId);
-                    if (foundUser.isPresent())
-                        throw new OperationNotPosible("Possible duplicate credentials or email");
+                    if (foundUser.isEmpty())
+                        throw new OperationNotPosible("Unable to delete, user not registered");
                     else {
                         fucRepo.deleteUserFK(userId);
                         userRepo.deleteById(userId);
